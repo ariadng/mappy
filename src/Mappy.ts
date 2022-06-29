@@ -1,6 +1,5 @@
 import { MappyConfig, MappyConfigDefault } from "./MappyConfig";
 import { Loader } from "@googlemaps/js-api-loader"
-import MappyMap from "./MappyMap";
 import MappyMarker from "./MappyMarker";
 import { MappyMarkerConfig, MappyMarkerConfigDefault } from "./MappyMarkerConfig";
 
@@ -27,8 +26,12 @@ export default class Mappy {
 	}
 
 	// Instance
+	private container?: HTMLElement;
 	public map?: google.maps.Map;
 	public markers: MappyMarker[] = [];
+	private activePopups: any[] = [];
+	public refPoint = {x: 0, y: 0, moveX: 0, moveY: 0};
+	private refPointInitialized = false;
 
 	// Create new map instance
 	constructor (id: string, config: MappyConfig = MappyConfigDefault) {
@@ -46,11 +49,17 @@ export default class Mappy {
 			return;
 		}
 
+		// Container
+		this.container = container;
+		this.container.style.position = "relative";
+		this.container.style.overflow = "hidden";
+
+		// Add map element
 		const mapElement = document.createElement("div");
 		mapElement.classList.add("map");
 		mapElement.style.width = "100%";
 		mapElement.style.height = "100%";
-		container.appendChild(mapElement);
+		this.container.appendChild(mapElement);
 
 		this.map = new google.maps.Map(mapElement as HTMLElement, {
 			// Override default settings
@@ -60,6 +69,24 @@ export default class Mappy {
 			zoom	: _config.zoom,
 		});
 
+		// Reference marker
+		const refMarker = new google.maps.Marker({
+			position: this.map.getCenter(),
+			icon: {
+				url: "",
+				size: new google.maps.Size(0,0),
+			}
+		});
+		refMarker.setMap(this.map);
+
+		// Event listeners
+		// - First time loaded
+		this.map.addListener("tilesloaded", () => { this.onLoad() });
+		// - Maps moved
+		this.map.addListener("center_changed", () => { this.onMove() });
+		// - Maps clicked
+		this.map.addListener("click", () => { this.onClick() });
+
 		Mappy.instances.push(this);
 
 	}
@@ -67,8 +94,49 @@ export default class Mappy {
 	// Add a marker to map
 	public addMarker(config: MappyMarkerConfig = MappyMarkerConfigDefault): void {
 		const _config = { ...MappyMarkerConfigDefault, ...config};
-		const marker = new MappyMarker(this.map!, _config);
+		const marker = new MappyMarker(this, _config);
 		this.markers.push(marker);
+	}
+
+	// Add element to container
+	public addElement(element: HTMLElement): void {
+		this.container?.appendChild(element);
+	}
+
+	private onLoad(): void {
+		if (!this.refPointInitialized) {
+			const ref = this.container?.querySelector("img");
+			if (ref) {
+				const rect = ref.getBoundingClientRect();
+				this.refPoint.x = rect.x;
+				this.refPoint.y = rect.y;
+				this.refPointInitialized = true;
+			}
+		}
+	}
+
+	private onMove(): void {
+		this.updateRefPoint();
+	}
+	private onClick(): void {
+		this.closePopup();
+	}
+
+	private updateRefPoint(): void {
+		const ref = this.container?.querySelector("img");
+		if (ref) {
+			const rect = ref.getBoundingClientRect();
+			this.refPoint.moveX = rect.x - this.refPoint.x;
+			this.refPoint.moveY = rect.y - this.refPoint.y;
+		}
+	}
+
+	// Possible performance bottleneck on many markers
+	public closePopup(): void {
+		for (let i = 0; i < this.markers.length; i++) {
+			const marker = this.markers[i];
+			marker.closePopup();
+		}
 	}
 
 	

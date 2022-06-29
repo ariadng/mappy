@@ -2,6 +2,10 @@ export interface MappyMarkerConfig {
 	lat: number;
 	lng: number;
 	icon?: { url?: string, width?: number, height?: number };
+
+	popup?: HTMLElement;
+
+	onClick?: Function;
 }
 
 export const MappyMarkerConfigDefault: MappyMarkerConfig = {
