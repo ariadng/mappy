@@ -144,8 +144,6 @@ export default class Mappy {
 
 			this.origin.moveTop		= moveY;
 			this.origin.moveLeft	= moveX;
-
-			console.log(this.origin)
 		}
 	}
 
