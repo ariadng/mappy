@@ -36,6 +36,7 @@ export default class Mappy {
 
 	private onClick?: Function;
 	private onMove?: Function;
+	private onZoom?: Function;
 
 	// Create new map instance
 	constructor (id: string, config: MappyConfig = MappyConfigDefault) {
@@ -55,6 +56,7 @@ export default class Mappy {
 
 		if (_config.onClick) this.onClick = _config.onClick;
 		if (_config.onMove) this.onMove = _config.onMove;
+		if (_config.onZoom) this.onZoom = _config.onZoom;
 
 		// – Origin
 		const containerRect	= container.getBoundingClientRect();
@@ -98,6 +100,8 @@ export default class Mappy {
 		this.map.addListener("tilesloaded", () => { this.onLoad() });
 		// - Maps moved
 		this.map.addListener("center_changed", () => { this.handleOnMove() });
+		// - Maps zoomed
+		this.map.addListener("zoom_changed", () => { this.handleOnZoom() });
 		// - Maps clicked
 		this.map.addListener("click", () => { this.handleOnClick() });
 		
@@ -141,16 +145,17 @@ export default class Mappy {
 		this.closePopup();
 		if (this.onClick) this.onClick();
 	}
+	private handleOnZoom(): void {
+		this.closePopup();
+		if (this.onZoom) this.onZoom();
+	}
 
 	private updateRefPoint(): void {
 		const ref = this.container?.querySelector("img");
 		if (ref) {
 			const rect = ref.getBoundingClientRect();
-			const moveX = rect.x - this.refPoint.x;
-			const moveY = rect.y - this.refPoint.y;
-			
-			this.refPoint.moveX = moveX;
-			this.refPoint.moveY = moveY;
+			const moveX = rect.x - this.refPoint.x + this.origin.scrollLeft;
+			const moveY = rect.y - this.refPoint.y + this.origin.scrollTop;
 
 			this.origin.moveTop		= moveY;
 			this.origin.moveLeft	= moveX;

@@ -99,7 +99,7 @@ export default class MappyMarker {
 
 	private update(): void {
 		if (this.popupElement && this.origin) {
-			
+
 			const top	= this.origin.top - this.origin.initMoveTop + this.context.origin.moveTop - this.context.origin.top - this.context.origin.scrollTop;
 			const left 	= this.origin.left - this.origin.initMoveLeft + this.context.origin.moveLeft - this.context.origin.left - this.context.origin.scrollLeft;
 			

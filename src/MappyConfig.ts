@@ -4,6 +4,7 @@ export interface MappyConfig {
 	zoom?: number;
 	onClick?: Function;
 	onMove?: Function;
+	onZoom?: Function;
 }
 
 export const MappyConfigDefault: MappyConfig = {
