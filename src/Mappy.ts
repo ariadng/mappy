@@ -32,7 +32,7 @@ export default class Mappy {
 	private activePopups: any[] = [];
 	public refPoint = {x: 0, y: 0, moveX: 0, moveY: 0};
 	private refPointInitialized = false;
-	public origin = { top: 0, left: 0, moveTop: 0, moveLeft: 0 };
+	public origin = { top: 0, left: 0, scrollTop: 0, scrollLeft: 0, moveTop: 0, moveLeft: 0, initScrollTop: 0, initScrollLeft: 0 };
 
 	// Create new map instance
 	constructor (id: string, config: MappyConfig = MappyConfigDefault) {
@@ -54,6 +54,8 @@ export default class Mappy {
 		const containerRect	= container.getBoundingClientRect();
 		this.origin.top		= containerRect.top;
 		this.origin.left	= containerRect.left;
+		this.origin.initScrollTop = window.scrollY;
+		this.origin.initScrollLeft = window.scrollX;
 
 		// Container
 		this.container = container;
@@ -160,6 +162,8 @@ export default class Mappy {
 		// Update container origin
 		if (this.container) {
 			const containerRect	= this.container.getBoundingClientRect();
+			this.origin.scrollTop = window.scrollY - this.origin.initScrollTop;
+			this.origin.scrollLeft = window.scrollX - this.origin.initScrollLeft;
 			this.origin.top 	= containerRect.top;
 			this.origin.left	= containerRect.left;
 		}
