@@ -62,8 +62,8 @@ export default class MappyMarker {
 		const markerRect = e.domEvent.target.getBoundingClientRect();
 		const rect = this.popupElement!.getBoundingClientRect();
 
-		const top	= markerRect.top - rect.height - this.context.origin.top;
-		const left	= markerRect.left + (markerRect.width * 0.5) - (rect.width * 0.5) - this.context.origin.left;
+		const top	= markerRect.top - rect.height;
+		const left	= markerRect.left + (markerRect.width * 0.5) - (rect.width * 0.5);
 
 		const initMoveTop = this.context.origin.moveTop;
 		const initMoveLeft = this.context.origin.moveLeft;
@@ -73,6 +73,7 @@ export default class MappyMarker {
 		if (!this.origin) {
 			this.origin = origin;
 		}
+		this.update();
 
 		this.context!.closePopup();
 		
@@ -101,8 +102,8 @@ export default class MappyMarker {
 	private update(): void {
 		if (this.popupElement && this.origin) {
 			
-			const top	= this.origin.top - this.origin.initMoveTop + this.context.origin.moveTop;
-			const left 	= this.origin.left - this.origin.initMoveLeft + this.context.origin.moveLeft;
+			const top	= this.origin.top - this.origin.initMoveTop + this.context.origin.moveTop - this.context.origin.top;;
+			const left 	= this.origin.left - this.origin.initMoveLeft + this.context.origin.moveLeft - this.context.origin.left;;
 			
 			if (!this.popupHidden) {
 				this.popupElement.style.top = top + "px";
