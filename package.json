@@ -1,6 +1,6 @@
 {
   "name": "mappy",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Google Maps JavaScript SDK Wrapper",
   "main": "index.js",
   "scripts": {
