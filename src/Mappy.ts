@@ -34,6 +34,9 @@ export default class Mappy {
 	private refPointInitialized = false;
 	public origin = { top: 0, left: 0, scrollTop: 0, scrollLeft: 0, moveTop: 0, moveLeft: 0, initScrollTop: 0, initScrollLeft: 0 };
 
+	private onClick?: Function;
+	private onMove?: Function;
+
 	// Create new map instance
 	constructor (id: string, config: MappyConfig = MappyConfigDefault) {
 
@@ -49,6 +52,9 @@ export default class Mappy {
 			console.error(`Element with id ${id} doesn't exist.`);
 			return;
 		}
+
+		if (_config.onClick) this.onClick = _config.onClick;
+		if (_config.onMove) this.onMove = _config.onMove;
 
 		// – Origin
 		const containerRect	= container.getBoundingClientRect();
@@ -91,9 +97,9 @@ export default class Mappy {
 		// - First time loaded
 		this.map.addListener("tilesloaded", () => { this.onLoad() });
 		// - Maps moved
-		this.map.addListener("center_changed", () => { this.onMove() });
+		this.map.addListener("center_changed", () => { this.handleOnMove() });
 		// - Maps clicked
-		this.map.addListener("click", () => { this.onClick() });
+		this.map.addListener("click", () => { this.handleOnClick() });
 		
 		// - Window Events
 		window.addEventListener("resize", () => { this.closePopup(); })
@@ -127,11 +133,13 @@ export default class Mappy {
 		}
 	}
 
-	private onMove(): void {
+	private handleOnMove(): void {
 		this.updateRefPoint();
+		if (this.onMove) this.onMove();
 	}
-	private onClick(): void {
+	private handleOnClick(): void {
 		this.closePopup();
+		if (this.onClick) this.onClick();
 	}
 
 	private updateRefPoint(): void {

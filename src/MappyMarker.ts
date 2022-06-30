@@ -70,9 +70,7 @@ export default class MappyMarker {
 		
 		const origin = { top, left, initMoveTop, initMoveLeft };
 
-		if (!this.origin) {
-			this.origin = origin;
-		}
+		this.origin = origin;
 		this.update();
 
 		this.context!.closePopup();

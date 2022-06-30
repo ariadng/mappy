@@ -2,6 +2,8 @@ export interface MappyConfig {
 	lat: number;
 	lng: number;
 	zoom?: number;
+	onClick?: Function;
+	onMove?: Function;
 }
 
 export const MappyConfigDefault: MappyConfig = {
