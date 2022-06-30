@@ -3,16 +3,18 @@ import { MappyMarkerConfig } from "./MappyMarkerConfig";
 
 export default class MappyMarker {
 
-	private context?: Mappy;
+	private context: Mappy;
 
 	private marker?: google.maps.Marker;
 
 	private onClick?: Function;
 
 	public position? : { lat: number, lng: number };
-	public origin?: { top: number, left: number, x: number, y: number };
+	public origin?: { top: number, left: number, initMoveTop: number, initMoveLeft: number };
 
 	public popupElement?: HTMLElement;
+	public popupInnerElement?: HTMLElement;
+	public popupHidden = true;
 
 	constructor (context: Mappy, config: MappyMarkerConfig) {
 		let _config: any = {
@@ -42,6 +44,7 @@ export default class MappyMarker {
 			this.popupElement.style.opacity = "0";
 
 			this.context.addElement(this.popupElement);
+			this.popupInnerElement = config.popup;
 			this.context.map!.addListener("center_changed", () => { this.update(); })
 		}
 
@@ -55,22 +58,31 @@ export default class MappyMarker {
 	}
 
 	private clickHandler(e: any): void {
-		const rect 	= e.domEvent.target.getBoundingClientRect();
-		const x		= rect.left + (rect.width * 0.5) - this.context!.refPoint.moveX;
-		const y 	= rect.top - this.context!.refPoint.moveY;
 		
-		const origin = { x, y, top: rect.top, left: rect.left };
+		const markerRect = e.domEvent.target.getBoundingClientRect();
+		const rect = this.popupElement!.getBoundingClientRect();
+
+		const top	= markerRect.top - rect.height - this.context.origin.top;
+		const left	= markerRect.left + (markerRect.width * 0.5) - (rect.width * 0.5) - this.context.origin.left;
+
+		const initMoveTop = this.context.origin.moveTop;
+		const initMoveLeft = this.context.origin.moveLeft;
+		
+		const origin = { top, left, initMoveTop, initMoveLeft };
+
 		if (!this.origin) {
 			this.origin = origin;
 		}
 
 		this.context!.closePopup();
-		this.openPopup();
 		
+		this.openPopup();
 		if (this.onClick) this.onClick(this);
+
 	}
 
 	public openPopup(): void {
+		this.popupHidden = false;
 		this.update();
 		if (this.popupElement) {
 			this.popupElement.style.opacity = "1";
@@ -82,16 +94,20 @@ export default class MappyMarker {
 			this.popupElement.style.opacity = "0";
 			this.popupElement.style.top = "-100%";
 			this.popupElement.style.left = "-100%";
+			this.popupHidden = true;
 		}
 	}
 
 	private update(): void {
 		if (this.popupElement && this.origin) {
-			const rect 	= this.popupElement.getBoundingClientRect();
-			const left 	= this.origin.x - (rect.width * 0.5) + this.context!.refPoint.moveX;
-			const top	= this.origin.y - (rect.height + 20) + this.context!.refPoint.moveY;
-			this.popupElement.style.top	 = top + "px";
-			this.popupElement.style.left = left + "px";
+			
+			const top	= this.origin.top - this.origin.initMoveTop + this.context.origin.moveTop;
+			const left 	= this.origin.left - this.origin.initMoveLeft + this.context.origin.moveLeft;
+			
+			if (!this.popupHidden) {
+				this.popupElement.style.top = top + "px";
+				this.popupElement.style.left = left + "px";
+			}
 		}
 	}
 

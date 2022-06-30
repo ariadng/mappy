@@ -26,12 +26,13 @@ export default class Mappy {
 	}
 
 	// Instance
-	private container?: HTMLElement;
+	public container?: HTMLElement;
 	public map?: google.maps.Map;
 	public markers: MappyMarker[] = [];
 	private activePopups: any[] = [];
 	public refPoint = {x: 0, y: 0, moveX: 0, moveY: 0};
 	private refPointInitialized = false;
+	public origin = { top: 0, left: 0, moveTop: 0, moveLeft: 0 };
 
 	// Create new map instance
 	constructor (id: string, config: MappyConfig = MappyConfigDefault) {
@@ -48,6 +49,11 @@ export default class Mappy {
 			console.error(`Element with id ${id} doesn't exist.`);
 			return;
 		}
+
+		// – Origin
+		const containerRect	= container.getBoundingClientRect();
+		this.origin.top		= containerRect.top;
+		this.origin.left	= containerRect.left;
 
 		// Container
 		this.container = container;
@@ -86,6 +92,10 @@ export default class Mappy {
 		this.map.addListener("center_changed", () => { this.onMove() });
 		// - Maps clicked
 		this.map.addListener("click", () => { this.onClick() });
+		
+		// - Window Events
+		window.addEventListener("resize", () => { this.closePopup(); })
+		window.addEventListener("scroll", () => { this.onWindowScroll(); })
 
 		Mappy.instances.push(this);
 
@@ -126,8 +136,16 @@ export default class Mappy {
 		const ref = this.container?.querySelector("img");
 		if (ref) {
 			const rect = ref.getBoundingClientRect();
-			this.refPoint.moveX = rect.x - this.refPoint.x;
-			this.refPoint.moveY = rect.y - this.refPoint.y;
+			const moveX = rect.x - this.refPoint.x;
+			const moveY = rect.y - this.refPoint.y;
+			
+			this.refPoint.moveX = moveX;
+			this.refPoint.moveY = moveY;
+
+			this.origin.moveTop		= moveY;
+			this.origin.moveLeft	= moveX;
+
+			console.log(this.origin)
 		}
 	}
 
@@ -139,6 +157,14 @@ export default class Mappy {
 		}
 	}
 
-	
+	// Window Event Handlers
+	private onWindowScroll() {
+		// Update container origin
+		if (this.container) {
+			const containerRect	= this.container.getBoundingClientRect();
+			this.origin.top 	= containerRect.top;
+			this.origin.left	= containerRect.left;
+		}
+	}
 
 }
